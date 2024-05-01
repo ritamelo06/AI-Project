@@ -2,9 +2,9 @@
 # Devem alterar as classes e funções neste ficheiro de acordo com as instruções do enunciado.
 # Além das funções e classes sugeridas, podem acrescentar outras que considerem pertinentes.
 
-# Grupo 00:
-# 00000 Nome1
-# 00000 Nome2
+# Grupo 131:
+# 106507 Martim Afonso
+# 107294 Rita Melo
 
 import numpy as np
 import sys
@@ -35,23 +35,42 @@ class PipeManiaState:
 
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
+    size_n = 0
 
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
         return self.data[row][col]
        
 
-    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
+    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):  
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
-        # TODO
-        pass
+        row_above = row - 1
+        row_below = row + 1
+        if row_above < 0:
+            return None, self.get_value(row_below, col)
+        elif row_below > self.size_n - 1:
+            return self.get_value(row_above, col), None
+        else:
+            return self.get_value(row_above, col), self.get_value(row_below, col)
+        
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
-        # TODO
-        pass
+        col_left = col - 1
+        col_right = col + 1
+        if col_left < 0:
+            return None, self.get_value(row, col_left)
+        elif col_right > self.size_n - 1:
+            return self.get_value(row, col_left), None
+        else:
+            return self.get_value(row, col_left), self.get_value(row, col_right)
+        
+    def print_board(self) -> str:
+        for row in range(self.size_n):
+            print("\t".join(self.data[row]))
+       
 
     #new
     def __init__(self, data):
@@ -70,11 +89,10 @@ class Board:
         """
         #new
         lines = sys.stdin.readlines()
+        Board.size_n = len(lines)
         processed_data = [line.strip().split('\t') for line in lines if line.strip()]
         np_array = np.array(processed_data)   #converter a matriz num nparray
         return Board(np_array)
-        
-
 
     # TODO: outros metodos da classe
 
@@ -123,4 +141,6 @@ if __name__ == "__main__":
     # Imprimir para o standard output no formato indicado.
     
     board_instance = Board.parse_instance()
-    print(board_instance.get_value(0, 0))
+    board_instance.print_board()
+    
+ 
