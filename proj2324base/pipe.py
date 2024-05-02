@@ -37,6 +37,9 @@ class Board:
     """Representação interna de um tabuleiro de PipeMania."""
     size_n = 0
 
+    def __init__(self, data):
+        self.data = data
+
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
         return self.data[row][col]
@@ -70,11 +73,6 @@ class Board:
         for row in range(self.size_n):
             print(" ".join(self.data[row]))
 
-
-    #new
-    def __init__(self, data):
-        self.data = data
-
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -86,7 +84,7 @@ class Board:
             > from sys import stdin
             > line = stdin.readline().split()
         """
-        #new
+
         lines = sys.stdin.readlines()
         Board.size_n = len(lines)
         processed_data = [line.strip().split('\t') for line in lines if line.strip()]
@@ -96,18 +94,35 @@ class Board:
     # TODO: outros metodos da classe
 
 
-
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        # TODO
+        self.initial = PipeManiaState(board)
         pass
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
-        # TODO
-        pass
+        actions = []
+        for row in range(Board.size_n):
+            for col in range(Board.size_n):
+                if row == 0 and col == 0:
+                    topleft_piece = Board.get_value(0, 0)
+                    if topleft_piece == 'VB':
+                        continue
+                    elif topleft_piece == 'FD':
+                        actions.append((0, 0, True))
+                    elif topleft_piece == 'FB':
+                        actions.append((0, 0, False))
+                    elif topleft_piece == 'VE':
+                        actions.append((0, 0, False))
+                    elif topleft_piece == 'VD':
+                        actions.append((0, 0, True))
+                if row ==
+
+
+        return actions
+
 
     def result(self, state: PipeManiaState, action):
         """Retorna o estado resultante de executar a 'action' sobre
