@@ -40,9 +40,8 @@ class Board:
     def get_value(self, row: int, col: int) -> str:
         """Devolve o valor na respetiva posição do tabuleiro."""
         return self.data[row][col]
-       
 
-    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):  
+    def adjacent_vertical_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente acima e abaixo,
         respectivamente."""
         row_above = row - 1
@@ -53,7 +52,7 @@ class Board:
             return self.get_value(row_above, col), None
         else:
             return self.get_value(row_above, col), self.get_value(row_below, col)
-        
+
 
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
@@ -66,11 +65,11 @@ class Board:
             return self.get_value(row, col_left), None
         else:
             return self.get_value(row, col_left), self.get_value(row, col_right)
-        
+
     def print_board(self) -> str:
         for row in range(self.size_n):
-            print("\t".join(self.data[row]))
-       
+            print(" ".join(self.data[row]))
+
 
     #new
     def __init__(self, data):
@@ -139,8 +138,7 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    
+
     board_instance = Board.parse_instance()
     board_instance.print_board()
-    
- 
+
