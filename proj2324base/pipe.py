@@ -104,23 +104,102 @@ class PipeMania(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         actions = []
-        for row in range(Board.size_n):
-            for col in range(Board.size_n):
-                if row == 0 and col == 0:
-                    topleft_piece = Board.get_value(0, 0)
-                    if topleft_piece == 'VB':
+        last_idx = state.board.size_n - 1   
+
+        for row in range(state.board.size_n):
+            for col in range(state.board.size_n):
+                # canto superior esquerdo
+                if row == 0 and col == 0:     
+                    top_left = state.board.get_value(0,0)
+                    if top_left == 'VB':
                         continue
-                    elif topleft_piece == 'FD':
-                        actions.append((0, 0, True))
-                    elif topleft_piece == 'FB':
+                    elif top_left == 'VE':
                         actions.append((0, 0, False))
-                    elif topleft_piece == 'VE':
-                        actions.append((0, 0, False))
-                    elif topleft_piece == 'VD':
+                    elif top_left == 'VD':
                         actions.append((0, 0, True))
-                if row ==
-
-
+                    elif top_left == 'FD':
+                        actions.append((0, 0, True))
+                    elif top_left == 'FB':
+                        actions.append((0, 0, False))
+                    elif top_left == 'FC':
+                        actions.append((0, 0, True))
+                    elif top_left == 'FB':
+                        actions.append((0, 0, False))
+                    elif top_left == 'VC':
+                        actions.append((0, 0, False), (0, 0, True))
+                
+                # canto inferior esquerdo    
+                elif row == last_idx and col == 0:
+                    bottom_left = state.board.get_value(last_idx, 0)
+                    if bottom_left == 'VD':
+                        continue
+                    elif bottom_left == 'VB':
+                        actions.append((last_idx, 0, False))
+                    elif bottom_left == 'VC':
+                        actions.append((last_idx, 0, True))
+                    elif bottom_left == 'FC':
+                        actions.append((last_idx, 0, True))
+                    elif bottom_left == 'FB':
+                        actions.append((last_idx, 0, False))
+                    elif bottom_left == 'FE':
+                        actions.append((last_idx, 0, True))
+                    elif bottom_left == 'FD':
+                        actions.append((last_idx, 0, False))
+                    elif bottom_left == 'VE':
+                        actions.append((last_idx, 0, False), (last_idx, 0, True))
+                
+                # canto inferior direito    
+                elif row == last_idx and col == last_idx:
+                    bottom_right = state.board.get_value(last_idx, last_idx)
+                    if bottom_right == 'VC':
+                        continue
+                    elif bottom_right == 'VD':
+                        actions.append((last_idx, last_idx, False))
+                    elif bottom_right == 'VE':
+                        actions.append((last_idx, last_idx, True))
+                    elif bottom_right == 'FC':
+                        actions.append((last_idx, last_idx, False))
+                    elif bottom_right == 'FB':
+                        actions.append((last_idx, last_idx, True))
+                    elif bottom_right == 'FE':
+                        actions.append((last_idx, last_idx, True))
+                    elif bottom_right == 'FD':
+                        actions.append((last_idx, last_idx, False))
+                    elif bottom_right == 'VB':
+                        actions.append( (last_idx, last_idx, False), (last_idx, last_idx, True))
+                
+                # canto superior direito
+                elif row == 0 and col == last_idx:
+                    top_right = state.board.get_value(0, last_idx)
+                    if top_right == 'VE':
+                        continue
+                    elif top_right == 'VC':
+                        actions.append((0, last_idx, False))
+                    elif top_right == 'VB':
+                        actions.append((0, last_idx, True))
+                    elif top_right == 'FC':
+                        actions.append((0, last_idx, False))
+                    elif top_right == 'FB':
+                        actions.append((0, last_idx, True))
+                    elif top_right == 'FE':
+                        actions.append((0, last_idx, False))
+                    elif top_right == 'FD':
+                        actions.append((0, last_idx, True))
+                    elif top_right == 'VD':
+                        actions.append((0, last_idx, False), (0, last_idx, True)) 
+                """
+                elif col == 0:
+                    piece = state.board.get_value(row, 0)
+                    if piece == 'BD':
+                        continue
+                    elif piece == 'BB':
+                        actions.append((row, 0, False))
+                    elif piece == 'BC':
+                        actions.append((row, 0, True))
+                    elif piece == 'LV':
+                        continue
+                    elif    
+                """    
         return actions
 
 
@@ -154,6 +233,9 @@ if __name__ == "__main__":
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
 
-    board_instance = Board.parse_instance()
-    board_instance.print_board()
+    board = Board.parse_instance()
+    board.print_board()
+    problem = PipeMania(board)
+    initial_state = PipeManiaState(board)
+    print(problem.actions(initial_state))
 
