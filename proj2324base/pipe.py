@@ -272,25 +272,25 @@ class PipeMania(Problem):
                     if pipe == 'BC' or pipe == 'LH':
                         continue
                     elif pipe == 'BE':
-                        actions.append((last_idx, 0, True))
+                        actions.append((last_idx, col, True))
                     elif pipe == 'BD':
-                        actions.append((last_idx, 0, False))
+                        actions.append((last_idx, col, False))
                     elif pipe == 'FE':
-                        actions.append((last_idx, 0, True))
+                        actions.append((last_idx, col, True))
                     elif pipe == 'FD':
-                        actions.append((last_idx, 0, False))
+                        actions.append((last_idx, col, False))
                     elif pipe == 'VB':
-                        actions.append((0, col, False))
+                        actions.append((last_idx, col, False))
                     elif pipe == 'VC':
-                        actions.append((0, col, True))
+                        actions.append((last_idx, col, True))
                     elif pipe == 'VE':
-                        actions.append((0, col, True))
+                        actions.append((last_idx, col, True))
                     elif pipe == 'VD':
-                        actions.append((0, col, False))
+                        actions.append((last_idx, col, False))
                     else:
-                        actions.append((0, col, True))
-                        actions.append((0, col, False))
-
+                        actions.append((last_idx, col, True))
+                        actions.append((last_idx, col, False))
+                
                 # peças interiores
                 else:
                     actions.append((row, col, True))   
