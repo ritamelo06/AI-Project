@@ -107,198 +107,77 @@ class PipeMania(Problem):
 
         for row in range(state.board.size_n):
             for col in range(state.board.size_n):
+                # Cantos
                 # canto superior esquerdo
-                if row == 0 and col == 0:     
+                if row == 0 and col == 0:
                     top_left = state.board.get_value(0,0)
                     if top_left == 'VB':
                         continue
-                    elif top_left == 'VE':
+                    elif top_left in ['VE', 'FB', 'VC']:
                         actions.append((0, 0, False))
-                    elif top_left == 'VD':
+                    elif top_left in ['VD', 'FD', 'FC', 'VC']:
                         actions.append((0, 0, True))
-                    elif top_left == 'FD':
-                        actions.append((0, 0, True))
-                    elif top_left == 'FB':
-                        actions.append((0, 0, False))
-                    elif top_left == 'FC':
-                        actions.append((0, 0, True))
-                    elif top_left == 'FB':
-                        actions.append((0, 0, False))
-                    elif top_left == 'VC':
-                        actions.append((0, 0, False))
-                        actions.append((0, 0, True))
-                
-                # canto inferior esquerdo    
+                # canto inferior esquerdo
                 elif row == last_idx and col == 0:
                     bottom_left = state.board.get_value(last_idx, 0)
                     if bottom_left == 'VD':
                         continue
-                    elif bottom_left == 'VB':
+                    elif bottom_left in ['VB', 'FB', 'FD', 'VE']:
                         actions.append((last_idx, 0, False))
-                    elif bottom_left == 'VC':
+                    elif bottom_left in ['VC', 'FC', 'FE', 'VE']:
                         actions.append((last_idx, 0, True))
-                    elif bottom_left == 'FC':
-                        actions.append((last_idx, 0, True))
-                    elif bottom_left == 'FB':
-                        actions.append((last_idx, 0, False))
-                    elif bottom_left == 'FE':
-                        actions.append((last_idx, 0, True))
-                    elif bottom_left == 'FD':
-                        actions.append((last_idx, 0, False))
-                    elif bottom_left == 'VE':
-                        actions.append((last_idx, 0, False))
-                        actions.append((last_idx, 0, True))
-                
-                # canto inferior direito    
+
+                # canto inferior direito
                 elif row == last_idx and col == last_idx:
                     bottom_right = state.board.get_value(last_idx, last_idx)
                     if bottom_right == 'VC':
                         continue
-                    elif bottom_right == 'VD':
-                        actions.append((last_idx, last_idx, False))
-                    elif bottom_right == 'VE':
-                        actions.append((last_idx, last_idx, True))
-                    elif bottom_right == 'FC':
-                        actions.append((last_idx, last_idx, False))
-                    elif bottom_right == 'FB':
-                        actions.append((last_idx, last_idx, True))
-                    elif bottom_right == 'FE':
-                        actions.append((last_idx, last_idx, True))
-                    elif bottom_right == 'FD':
-                        actions.append((last_idx, last_idx, False))
-                    elif bottom_right == 'VB':
-                        actions.append((last_idx, last_idx, False))
-                        actions.append((last_idx, last_idx, True))
-                
+                    elif bottom_left in ['VD', 'FC', 'FD', 'VB']:
+                        actions.append((last_idx, 0, False))
+                    elif bottom_left in ['VE', 'FB', 'FE', 'VB']:
+                        actions.append((last_idx, 0, True))
+
                 # canto superior direito
                 elif row == 0 and col == last_idx:
                     top_right = state.board.get_value(0, last_idx)
                     if top_right == 'VE':
                         continue
-                    elif top_right == 'VC':
-                        actions.append((0, last_idx, False))
-                    elif top_right == 'VB':
-                        actions.append((0, last_idx, True))
-                    elif top_right == 'FC':
-                        actions.append((0, last_idx, False))
-                    elif top_right == 'FB':
-                        actions.append((0, last_idx, True))
-                    elif top_right == 'FE':
-                        actions.append((0, last_idx, False))
-                    elif top_right == 'FD':
-                        actions.append((0, last_idx, True))
-                    elif top_right == 'VD':
-                        actions.append((0, last_idx, False)) 
-                        actions.append((0, last_idx, True)) 
+                    elif bottom_left in ['VC', 'FC', 'FE', 'VD']:
+                        actions.append((last_idx, 0, False))
+                    elif bottom_left in ['VB', 'FB', 'FD', 'VD']:
+                        actions.append((last_idx, 0, True))
 
-                # fronteira da esquerda
-                elif col == 0:
-                    pipe = state.board.get_value(row, 0)
-                    if pipe == 'BD' or pipe == 'LV':
-                        continue
-                    elif pipe == 'BB':
-                        actions.append((row, 0, False))
-                    elif pipe == 'BC':
-                        actions.append((row, 0, True))
-                    elif pipe == 'FB':
-                        actions.append((row, 0, False))
-                    elif pipe == 'FC':
-                        actions.append((row, 0, True))
-                    elif pipe == 'VB':
-                        actions.append((row, 0, False))
-                    elif pipe == 'VC':
-                        actions.append((row, 0, True))
-                    elif pipe == 'VE':
-                        actions.append((row, 0, False))
-                    elif pipe == 'VD':
-                        actions.append((row, 0, True))
-                    else:
-                        actions.append((row, 0, False))
-                        actions.append((row, 0, True))
+                # Borda
+                elif row == 0 or col == 0 or row == last_idx or col == last_idx:
+                    pipe = state.board.get_value(row, col)
+                    if row == 0:
+                        if pipe in ['BE', 'BD', 'FE', 'FD', 'VC', 'VE', 'VD']:
+                            actions.append((row, col, False))
+                        if pipe in ['BE', 'BB', 'FE', 'FB', 'VB', 'VC', 'VE']:
+                            actions.append((row, col, True))
+                    elif col == 0:
+                        if pipe in ['BB', 'BC', 'FB', 'FC', 'VB', 'VC', 'VD']:
+                            actions.append((row, col, True))
+                        if pipe in ['BB', 'BE', 'FB', 'FE', 'VB', 'VC', 'VE']:
+                            actions.append((row, col, False))
+                    elif row == last_idx:
+                        if pipe in ['BC', 'BE', 'FC', 'FE', 'VB', 'VD', 'VE']:
+                            actions.append((row, col, False))
+                        if pipe in ['BC', 'BD', 'FC', 'FD', 'VB', 'VC', 'VD']:
+                            actions.append((row, col, True))
+                    elif col == last_idx:
+                        if pipe in ['BD', 'BB', 'FD', 'FB', 'VC', 'VE', 'VD']:
+                            actions.append((row, col, True))
+                        if pipe in ['BD', 'BC', 'FD', 'FC', 'VC', 'VD', 'VE']:
+                            actions.append((row, col, False))
 
-                # fronteira da direita
-                elif col == last_idx:
-                    pipe = state.board.get_value(row, last_idx)
-                    if pipe == 'BE' or pipe == 'LV':
-                        continue
-                    elif pipe == 'BB':
-                        actions.append((row, last_idx, True))
-                    elif pipe == 'BC':
-                        actions.append((row, last_idx, False))
-                    elif pipe == 'FB':
-                        actions.append((row, last_idx, True))
-                    elif pipe == 'FC':
-                        actions.append((row, last_idx, False))
-                    elif pipe == 'VB':
-                        actions.append((row, last_idx, True))
-                    elif pipe == 'VC':
-                        actions.append((row, last_idx, False))
-                    elif pipe == 'VE':
-                        actions.append((row, last_idx, True))
-                    elif pipe == 'VD':
-                        actions.append((row, last_idx, False))
-                    else:
-                        actions.append((row, last_idx, True))
-                        actions.append((row, last_idx, False))
-
-                # fronteira de cima
-                elif row == 0:
-                    pipe = state.board.get_value(0, col)
-                    if pipe == 'BB' or pipe == 'LH':
-                        continue
-                    elif pipe == 'BE':
-                        actions.append((0, col, False))
-                    elif pipe == 'BD':
-                        actions.append((0, col, True))
-                    elif pipe == 'FE':
-                        actions.append((0, col, False))
-                    elif pipe == 'FD':
-                        actions.append((0, col, True))
-                    elif pipe == 'VB':
-                        actions.append((0, col, True))
-                    elif pipe == 'VC':
-                        actions.append((0, col, False))
-                    elif pipe == 'VE':
-                        actions.append((0, col, False))
-                    elif pipe == 'VD':
-                        actions.append((0, col, True))
-                    else:
-                        actions.append((0, col, True))
-                        actions.append((0, col, False))
-
-                # fronteira de baixo
-                elif row == last_idx:
-                    pipe = state.board.get_value(last_idx, col)
-                    if pipe == 'BC' or pipe == 'LH':
-                        continue
-                    elif pipe == 'BE':
-                        actions.append((last_idx, col, True))
-                    elif pipe == 'BD':
-                        actions.append((last_idx, col, False))
-                    elif pipe == 'FE':
-                        actions.append((last_idx, col, True))
-                    elif pipe == 'FD':
-                        actions.append((last_idx, col, False))
-                    elif pipe == 'VB':
-                        actions.append((last_idx, col, False))
-                    elif pipe == 'VC':
-                        actions.append((last_idx, col, True))
-                    elif pipe == 'VE':
-                        actions.append((last_idx, col, True))
-                    elif pipe == 'VD':
-                        actions.append((last_idx, col, False))
-                    else:
-                        actions.append((last_idx, col, True))
-                        actions.append((last_idx, col, False))
-                
-                # peças interiores
+                # Interior
                 else:
-                    actions.append((row, col, True))   
-                    actions.append((row, col, False)) 
+                    actions.append((row, col, True))
+                    actions.append((row, col, False))
         return actions
 
     # FUNÇÃO PARA COPIAR O BOARD (aula pratica)
-
 
     def result(self, state: PipeManiaState, action):
         """Retorna o estado resultante de executar a 'action' sobre
