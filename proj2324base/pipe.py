@@ -73,6 +73,16 @@ class Board:
         for row in range(self.size_n):
             print(" ".join(self.data[row]))
 
+    def copy_board(self):
+        new_board = []
+        for row in range(self.size_n):
+            new_line = []
+            for col in range(self.size_n):
+                new_line.append(self.data[row][col])
+            new_board.append(new_line)
+        np_array = np.array(new_board)
+        return Board(np_array)
+
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -97,13 +107,13 @@ class Board:
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
-        self.initial = PipeManiaState(board) 
+        self.initial = PipeManiaState(board)
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         actions = []
-        last_idx = state.board.size_n - 1   
+        last_idx = state.board.size_n - 1
 
         for row in range(state.board.size_n):
             for col in range(state.board.size_n):
@@ -181,22 +191,36 @@ class PipeMania(Problem):
                     actions.append((row, col, False))
         return actions
 
-    # FUNÇÃO PARA COPIAR O BOARD (aula pratica)
-
     def result(self, state: PipeManiaState, action):
         """Retorna o estado resultante de executar a 'action' sobre
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
         # TODO
-        pass
+        if action not in self.actions(state):
+            return state
+        else:
+            new_board = state.board.copy_board()
+            pieces = [['VB', 'VE', 'VC', 'VD'], ['FB', 'FE', 'FC', 'FD'],
+                    ['BB', 'BE', 'BC', 'BD'], ['LH', 'LV']]
+            order = ['V', 'F', 'B', 'L']
+            piece = new_board.get_value(action[0], action[1])
+            piece_index = order.index(piece[0])
+            if action[2]:
+                new_piece = pieces[piece_index][(pieces[piece_index].index(piece) + 1) % 4]
+            else:
+                new_piece = pieces[piece_index][(pieces[piece_index].index(piece) - 1) % 4]
+
+            new_board.data[action[0]][action[1]] = new_piece
+            return PipeManiaState(new_board)
 
     def goal_test(self, state: PipeManiaState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema."""
         # TODO
-        pass
+
+        return True
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
@@ -218,4 +242,6 @@ if __name__ == "__main__":
     problem = PipeMania(board)
     initial_state = PipeManiaState(board)
     print(problem.actions(initial_state))
+    result_state = problem.result(initial_state, (0, 0, True))
+    result_state.board.print_board()
 
