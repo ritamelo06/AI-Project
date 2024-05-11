@@ -22,7 +22,7 @@ directions = {
     "FC": (1, 0, 0, 0), "FD": (0, 1, 0, 0), "FB": (0, 0, 1, 0), "FE": (0, 0, 0, 1),
     "BC": (1, 1, 0, 1), "BD": (1, 1, 1, 0), "BB": (0, 1, 1, 1), "BE": (1, 0, 1, 1),
     "VC": (1, 0, 0, 1), "VD": (1, 1, 0, 0), "VB": (0, 1, 1, 0), "VE": (0, 0, 1, 1),
-    "LH": (0, 1, 0, 1), "LV": (1, 0 ,1 ,0)
+    "LH": (0, 1, 0, 1), "LV": (1, 0, 1 ,0)
 }
 
 class PipeManiaState:
@@ -36,12 +36,12 @@ class PipeManiaState:
     def __lt__(self, other):
         return self.id < other.id
 
-    # TODO: outros metodos da classe
 
 
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
     size_n = 0
+    # TODO: inicializar uma matriz_flags (1 = ter a certeza que peça está bem, 0 = c.c.)
 
     def __init__(self, data):
         self.data = data
@@ -104,22 +104,26 @@ class Board:
         lines = sys.stdin.readlines()
         Board.size_n = len(lines)
         processed_data = [line.strip().split('\t') for line in lines if line.strip()]
-        np_array = np.array(processed_data)   #converter a matriz num nparray
+        np_array = np.array(processed_data)       
+        # TODO: FAZER FUNÇAO DE INFERENCIAS NOS CANTOS E BORDAS (mudar peça no board mesmo !)
         return Board(np_array)
 
-    # TODO: outros metodos da classe
-
+  
 
 class PipeMania(Problem):
     def __init__(self, board: Board):
         """O construtor especifica o estado inicial."""
         self.initial = PipeManiaState(board)
+        super().__init__(self.initial)
 
     def actions(self, state: PipeManiaState):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""
         actions = []
         last_idx = state.board.size_n - 1
+        # TODO: adicionar uma variavel de depth (row+col) ao state 
+        # TODO: fazer action só se matriz_flags[row][col] for false
+        # TODO: depois de fazer as actions aumentar a variavel do state
 
         for row in range(state.board.size_n):
             for col in range(state.board.size_n):
@@ -133,6 +137,7 @@ class PipeMania(Problem):
                         actions.append((0, 0, False))
                     if top_left in ['VD', 'FD', 'FC', 'VC']:
                         actions.append((0, 0, True))
+                
                 # canto inferior esquerdo
                 elif row == last_idx and col == 0:
                     bottom_left = state.board.get_value(last_idx, 0)
@@ -202,49 +207,51 @@ class PipeMania(Problem):
         'state' passado como argumento. A ação a executar deve ser uma
         das presentes na lista obtida pela execução de
         self.actions(state)."""
-        # TODO
-        if action not in self.actions(state):
-            return None
+        #if action not in self.actions(state):
+        #    return None   
+        new_board = state.board.copy_board()
+        pieces = [['VB', 'VE', 'VC', 'VD'], ['FB', 'FE', 'FC', 'FD'],
+                ['BB', 'BE', 'BC', 'BD'], ['LH', 'LV']]
+        order = ['V', 'F', 'B', 'L']
+        
+        piece = state.board.get_value(action[0], action[1])
+        piece_index = order.index(piece[0])
+        if action[2]:
+            # clockwise
+            new_piece = pieces[piece_index][(pieces[piece_index].index(piece) + 1) % len(pieces[piece_index])]
         else:
-            new_board = state.board.copy_board()
-            pieces = [['VB', 'VE', 'VC', 'VD'], ['FB', 'FE', 'FC', 'FD'],
-                    ['BB', 'BE', 'BC', 'BD'], ['LH', 'LV']]
-            order = ['V', 'F', 'B', 'L']
-            
-            piece = new_board.get_value(action[0], action[1])
-            piece_index = order.index(piece[0])
-            if action[2]:
-                # clockwise
-                new_piece = pieces[piece_index][(pieces[piece_index].index(piece) + 1) % 4]
-            else:
-                # anti-clockwise
-                new_piece = pieces[piece_index][(pieces[piece_index].index(piece) - 1) % 4]
+            # anti-clockwise
+            new_piece = pieces[piece_index][(pieces[piece_index].index(piece) - 1) % len(pieces[piece_index])]
 
-            new_board.data[action[0]][action[1]] = new_piece
-            return PipeManiaState(new_board)
+        new_board.data[action[0]][action[1]] = new_piece
+        new_board.print_board()
+        return PipeManiaState(new_board)
 
     def goal_test(self, state: PipeManiaState):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
-        estão preenchidas de acordo com as regras do problema."""
-        stack = [(state.board.get_value(0, 0), 0 , 0)]  # tuplo( string, row, col)
-        visited = set()
-        i = 1
+        estão preenchidas de acordo com as regras do problema.""" 
+        stack = [(0 , 0)]               # tuplo(row, col)
+        visited_matrix = np.zeros((state.board.size_n, state.board.size_n))
+        visited_count = 0
+        
         while stack:
-            pipe_info = stack.pop()        # pipe_info = (string, row , col)
-            if pipe_info not in visited:
-                visited.add(pipe_info)
-                pipe_dir = directions[pipe_info[0]]   #pipe_dir = (x,x,x,x) x=1ou0
-                row = pipe_info[1]
-                col = pipe_info[2]
+            pipe_coord = stack.pop()                   
+            row = pipe_coord[0]
+            col = pipe_coord[1]     
+            
+            if not visited_matrix[row][col]:
+                visited_matrix[row][col] = 1
+                visited_count += 1
+                pipe_dir = directions[state.board.get_value(row, col)]     #pipe_dir = (x,x,x,x)   
                 
                 # top
                 if pipe_dir[0]:
-                    adj_top = state.board.adjacent_vertical_values(row, col)[0] # vizinho de cima
+                    adj_top = state.board.adjacent_vertical_values(row, col)[0]     # vizinho de cima
                     if adj_top == None:
                         return False
                     if directions[adj_top][2]:   # ver se o vizinho de cima tem pipe na direcao para baixo
-                        stack.append((adj_top, row - 1, col))
+                        stack.append((row - 1, col))
                     else:
                         return False
                
@@ -254,7 +261,7 @@ class PipeMania(Problem):
                     if adj_right == None:
                         return False
                     if directions[adj_right][3]:   # ver se o vizinho da direita tem pipe na direcao da esquerda
-                        stack.append((adj_right, row, col + 1))
+                        stack.append((row, col + 1))
                     else:
                         return False
                     
@@ -264,7 +271,7 @@ class PipeMania(Problem):
                     if adj_bottom == None:
                         return False
                     if directions[adj_bottom][0]:  # ver se o vizinho de baixo tem pipe na direcao de cima
-                        stack.append((adj_bottom, row + 1, col))
+                        stack.append((row + 1, col))
                     else:
                         return False
 
@@ -274,19 +281,16 @@ class PipeMania(Problem):
                     if adj_left == None:
                         return False
                     if directions[adj_left][1]:    # ver se o vizinho da esquerda tem pipe na direcao da direita
-                        stack.append((adj_left, row, col - 1))
+                        stack.append((row, col - 1))
                     else:
                         return False
         
-        return len(visited) == state.board.size_n ** 2
+        return visited_count == state.board.size_n ** 2
 
     def h(self, node: Node):
         """Função heuristica utilizada para a procura A*."""
         # TODO
         pass
-
-    # TODO: outros metodos da classe
-
 
 if __name__ == "__main__":
     # TODO:
@@ -295,24 +299,15 @@ if __name__ == "__main__":
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
     
-    """EXEMPLO 2
-    # Ler grelha do figura 1a:
-    board = Board.parse_instance()
-    # Criar uma instância de PipeMania:
-    problem = PipeMania(board)
-    # Criar um estado com a configuração inicial:
-    initial_state = PipeManiaState(board)
-    # Mostrar valor na posição (2, 2):
-    print(initial_state.board.get_value(2, 2))
-    # Realizar ação de rodar 90° clockwise a peça (2, 2)
-    result_state = problem.result(initial_state, (2, 2, True))
-    # Mostrar valor na posição (2, 2):
-    print(result_state.board.get_value(2, 2))"""
-
-    board = Board.parse_instance()   
-    problem = PipeMania(board)
-    initial_state = PipeManiaState(board)    
-    print("Is goal?", problem.goal_test(initial_state))
+    board: Board = Board.parse_instance()
+    board.print_board()
+    problem: Problem = PipeMania(board)
+    goal_node: Node = depth_first_tree_search(problem)
+    goal_node.state.board.print_board()
+    print('\n')
+    #initial_state = PipeManiaState(board)
+    #print(problem.goal_test(initial_state))
+    
     
 
     
