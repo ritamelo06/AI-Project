@@ -1,0 +1,3 @@
+FB	FD	FE
+FC	FD	FE
+FD	LH	FE
