@@ -70,7 +70,6 @@ class Board:
         else:
             return self.get_value(row_above, col), self.get_value(row_below, col)
 
-
     def adjacent_horizontal_values(self, row: int, col: int) -> (str, str):
         """Devolve os valores imediatamente à esquerda e à direita,
         respectivamente."""
@@ -188,7 +187,7 @@ class Board:
             return final_options_list
         
         # se não há deduções
-        else:     # ciclo infinito no teste 9
+        else:                   #É MELHOR MANDAR SÓ DUAS ROTAÇÕES AQUI OU AS TRÊS OPÇÕES POSSIVEIS?
             final_options = []
             current_dir = directions[current_pipe]
             rotated_right = current_dir[-1:] + current_dir[:-1]     # Shift right (rodar para a direita 90) 
@@ -281,9 +280,9 @@ class PipeMania(Problem):
         row, col, pipe = action[0], action[1], action[2]
         new_board = state.board.copy_board()
         new_board.data[row][col] = pipe
-        #new_board.inferences()
+        new_board.fixate_position(row, col)
         new_state = PipeManiaState(new_board)
-        new_state.next_position = state.next_position  # incrementar a variavel de next_position(depth)
+        new_state.next_position = state.next_position  # incrementar a variavel de next_position(depth)        
         return new_state
 
 
@@ -363,7 +362,7 @@ if __name__ == "__main__":
     problem: Problem = PipeMania(board)
     goal_node: Node = depth_first_tree_search(problem)
     goal_node.state.board.print_board()
-    
+    # arranjar maneira de checar se uma peça ja foi rodada para evitar ciclos infinitos
     
 
     
