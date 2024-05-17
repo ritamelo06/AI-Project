@@ -34,7 +34,8 @@ directions_binary = {
 
 class PipeManiaState:
     state_id = 0
-    next_position = 0  #new
+    next_position = 0 
+    goal_tested = False
 
     def __init__(self, board):
         self.board = board
@@ -45,11 +46,11 @@ class PipeManiaState:
         return self.id < other.id
 
 
-
 class Board:
     """Representação interna de um tabuleiro de PipeMania."""
     size_n = 0
-   
+    number_correct = 0
+
     def __init__(self, data):
         self.data = data
         self.correct_position  = np.zeros((self.size_n, self.size_n))
@@ -103,12 +104,15 @@ class Board:
                 new_correct_position[i, j] = self.correct_position[i, j]
 
         new_board_instance.correct_position = new_correct_position  # Atribuir a cópia da matriz de flags ao novo objeto Board
-
+        new_board_instance.number_correct = self.number_correct
+   
         return new_board_instance
 
     #new
     def fixate_position(self, row, col):
-        self.correct_position[row][col] = 1
+        if not self.correct_position[row][col]:
+            self.correct_position[row][col] = 1
+            self.number_correct += 1
 
     #new
     def deduce_pipe(self, row, col):
@@ -181,43 +185,37 @@ class Board:
             for option_list in list_aux[1:]:
                 final_options = final_options.intersection(set(option_list)) # fazer a interseção das listas de opções
             final_options_list = list(final_options)
-            
+
             if len(final_options_list) == 1:     # se só houver uma opção então temos a certeza da posição
                 self.fixate_position(row, col)   # fixar o pipe
             return final_options_list
         
         # se não há deduções
-        else:                   #É MELHOR MANDAR SÓ DUAS ROTAÇÕES AQUI OU AS TRÊS OPÇÕES POSSIVEIS?
+        else:       #É MELHOR MANDAR SÓ DUAS ROTAÇÕES AQUI OU AS TRÊS OPÇÕES POSSIVEIS?
             final_options = []
             current_dir = directions[current_pipe]
-            rotated_right = current_dir[-1:] + current_dir[:-1]     # Shift right (rodar para a direita 90) 
+            """rotated_right = current_dir[-1:] + current_dir[:-1]     # Shift right (rodar para a direita 90) 
             rotated_left = current_dir[1:] + current_dir[:1]        # Shift left  (rodar para a esquerda 90)
             final_options.append(directions_binary[rotated_right])
-            final_options.append(directions_binary[rotated_left])
+            final_options.append(directions_binary[rotated_left])"""
+            for pipe, direction in directions.items():
+                if pipe.startswith(current_pipe[0]):
+                    final_options.append(pipe)
             return final_options  
 
-    def first_inferences(self):
-        # Loop pelas bordas
-        for row in range(self.size_n):
-            for col in range(self.size_n):
-                if row == 0 or row == self.size_n - 1 or col == 0 or col == self.size_n - 1:
-                    deductions = self.deduce_pipe(row, col)
-                    if len(deductions) == 1:
-                        self.data[row][col] = deductions[0]
-        # Loop pelas posições interiores
-        for row in range(1, self.size_n - 1):
-            for col in range(1, self.size_n - 1):
-                deductions = self.deduce_pipe(row, col)
-                if len(deductions) == 1:
-                    self.data[row][col] = deductions[0]
-
+   
     def inferences(self):
-        for row in range(self.size_n):
-            for col in range(self.size_n):
-                deductions = self.deduce_pipe(row, col)
-                if len(deductions) == 1:
-                    self.data[row][col] = deductions[0]
-    
+        changes = True
+        while changes:
+            changes = False
+            for row in range(self.size_n):
+                for col in range(self.size_n):
+                    if not self.correct_position[row][col]:
+                        deductions = self.deduce_pipe(row, col)
+                        if len(deductions) == 1:
+                            changes = True
+                            self.data[row][col] = deductions[0]
+
     @staticmethod
     def parse_instance():
         """Lê o test do standard input (stdin) que é passado como argumento
@@ -235,7 +233,7 @@ class Board:
         processed_data = [line.strip().split('\t') for line in lines if line.strip()]
         np_array = np.array(processed_data)    
         board_instance = Board(np_array)
-        board_instance.first_inferences()
+        board_instance.inferences()
         return board_instance
 
   
@@ -249,9 +247,15 @@ class PipeMania(Problem):
         """Retorna uma lista de ações que podem ser executadas a
         partir do estado passado como argumento."""   
         actions = []
-        # verificar se já todas as coordenadas foram visitadas
+    
+        # verificar se já todas as coordenadas foram visitadas, matar a branch
         if state.next_position >= state.board.size_n ** 2:
-            return actions     # o actions aqui pode ser vazio?
+    
+            return actions     
+        
+        # se todas as peças já estão marcadas com "1" e o goal_test deu False então queremos matar a branch
+        elif (state.board.number_correct == state.board.size_n ** 2 and state.goal_tested):
+            return actions
         
         else:
             row = state.next_position // state.board.size_n
@@ -265,11 +269,15 @@ class PipeMania(Problem):
             
             # se nao estiver na posicao certa, calcular as deducoes
             else:
-                state.board.inferences()
-                deductions = state.board.deduce_pipe(row, col)  # ALGO NAS DEDUCOES ESTÁ MAL
-                for i in range(len(deductions)):
-                    actions.append((row, col, deductions[i]))
-                return actions
+                #state.board.inferences()
+                deductions = state.board.deduce_pipe(row, col) 
+                 
+                if not len(deductions):  # se nao houver deducoes possiveis mata a branch
+                    return actions
+                else:
+                    for i in range(len(deductions)):
+                        actions.append((row, col, deductions[i]))
+                    return actions
             
   
     def result(self, state: PipeManiaState, action):
@@ -293,7 +301,8 @@ class PipeMania(Problem):
         stack = [(0 , 0)]               # tuplo(row, col)
         visited_matrix = np.zeros((state.board.size_n, state.board.size_n))
         visited_count = 0
-        
+        state.goal_tested = True
+    
         while stack:
             pipe_coord = stack.pop()                   
             row = pipe_coord[0]
@@ -344,6 +353,9 @@ class PipeMania(Problem):
                     else:
                         return False
         
+        # se todas as peças ja estao 1, e o goal_test retorna False entao temos que matar o board no actions
+        # se nao continuamos a gerar inferencias for no reason
+
         return visited_count == state.board.size_n ** 2
 
     def h(self, node: Node):
@@ -357,12 +369,11 @@ if __name__ == "__main__":
     # Usar uma técnica de procura para resolver a instância,
     # Retirar a solução a partir do nó resultante,
     # Imprimir para o standard output no formato indicado.
-    
     board: Board = Board.parse_instance()
     problem: Problem = PipeMania(board)
     goal_node: Node = depth_first_tree_search(problem)
     goal_node.state.board.print_board()
-    # arranjar maneira de checar se uma peça ja foi rodada para evitar ciclos infinitos
+
     
 
     
