@@ -25,13 +25,6 @@ directions = {
     "LH": (0, 1, 0, 1), "LV": (1, 0, 1 ,0)
 }
 
-directions_binary = {
-    (1, 0, 0, 0): "FC", (0, 1, 0, 0): "FD", (0, 0, 1, 0): "FB", (0, 0, 0, 1): "FE",
-    (1, 1, 0, 1): "BC", (1, 1, 1, 0): "BD", (0, 1, 1, 1): "BB", (1, 0, 1, 1): "BE",
-    (1, 0, 0, 1): "VC", (1, 1, 0, 0): "VD", (0, 1, 1, 0): "VB", (0, 0, 1, 1): "VE",
-    (0, 1, 0, 1): "LH", (1, 0, 1 ,0): "LV"
-}
-
 class PipeManiaState:
     state_id = 0
     next_position = 0 
@@ -108,13 +101,11 @@ class Board:
    
         return new_board_instance
 
-    #new
     def fixate_position(self, row, col):
         if not self.correct_position[row][col]:
             self.correct_position[row][col] = 1
             self.number_correct += 1
 
-    #new
     def deduce_pipe(self, row, col):
         top_adj, bottom_adj = self.adjacent_vertical_values(row, col)
         left_adj, right_adj = self.adjacent_horizontal_values(row, col)
@@ -186,18 +177,13 @@ class Board:
                 final_options = final_options.intersection(set(option_list)) # fazer a interseção das listas de opções
             final_options_list = list(final_options)
 
-            if len(final_options_list) == 1:     # se só houver uma opção então temos a certeza da posição
+            if len(final_options_list) == 1:     # se só houver uma opção, então temos a certeza da posição
                 self.fixate_position(row, col)   # fixar o pipe
             return final_options_list
         
-        # se não há deduções
-        else:       #É MELHOR MANDAR SÓ DUAS ROTAÇÕES AQUI OU AS TRÊS OPÇÕES POSSIVEIS?
+        # se não há deduções, append todas as posições
+        else:       
             final_options = []
-            current_dir = directions[current_pipe]
-            """rotated_right = current_dir[-1:] + current_dir[:-1]     # Shift right (rodar para a direita 90) 
-            rotated_left = current_dir[1:] + current_dir[:1]        # Shift left  (rodar para a esquerda 90)
-            final_options.append(directions_binary[rotated_right])
-            final_options.append(directions_binary[rotated_left])"""
             for pipe, direction in directions.items():
                 if pipe.startswith(current_pipe[0]):
                     final_options.append(pipe)
@@ -249,8 +235,7 @@ class PipeMania(Problem):
         actions = []
     
         # verificar se já todas as coordenadas foram visitadas, matar a branch
-        if state.next_position >= state.board.size_n ** 2:
-    
+        if state.next_position >= state.board.size_n ** 2:    
             return actions     
         
         # se todas as peças já estão marcadas com "1" e o goal_test deu False então queremos matar a branch
@@ -271,7 +256,6 @@ class PipeMania(Problem):
             else:
                 #state.board.inferences()
                 deductions = state.board.deduce_pipe(row, col) 
-                 
                 if not len(deductions):  # se nao houver deducoes possiveis mata a branch
                     return actions
                 else:
@@ -289,8 +273,9 @@ class PipeMania(Problem):
         new_board = state.board.copy_board()
         new_board.data[row][col] = pipe
         new_board.fixate_position(row, col)
+        new_board.inferences()
         new_state = PipeManiaState(new_board)
-        new_state.next_position = state.next_position  # incrementar a variavel de next_position(depth)        
+        new_state.next_position = state.next_position         
         return new_state
 
 
@@ -298,7 +283,7 @@ class PipeMania(Problem):
         """Retorna True se e só se o estado passado como argumento é
         um estado objetivo. Deve verificar se todas as posições do tabuleiro
         estão preenchidas de acordo com as regras do problema.""" 
-        stack = [(0 , 0)]               # tuplo(row, col)
+        stack = [(0 , 0)]              
         visited_matrix = np.zeros((state.board.size_n, state.board.size_n))
         visited_count = 0
         state.goal_tested = True
@@ -352,10 +337,7 @@ class PipeMania(Problem):
                         stack.append((row, col - 1))
                     else:
                         return False
-        
-        # se todas as peças ja estao 1, e o goal_test retorna False entao temos que matar o board no actions
-        # se nao continuamos a gerar inferencias for no reason
-
+       
         return visited_count == state.board.size_n ** 2
 
     def h(self, node: Node):
