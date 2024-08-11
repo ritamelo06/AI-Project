@@ -346,11 +346,6 @@ class PipeMania(Problem):
         pass
 
 if __name__ == "__main__":
-    # TODO:
-    # Ler o ficheiro do standard input,
-    # Usar uma técnica de procura para resolver a instância,
-    # Retirar a solução a partir do nó resultante,
-    # Imprimir para o standard output no formato indicado.
     board: Board = Board.parse_instance()
     problem: Problem = PipeMania(board)
     goal_node: Node = depth_first_tree_search(problem)
