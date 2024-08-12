@@ -1,1 +1,1 @@
-Project made in Artificial Intelligence course.
+Pipe game solver made in Artificial Intelligence course.
