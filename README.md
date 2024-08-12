@@ -1,1 +1,1 @@
-Water pipes game solver made in Artificial Inteligence class.
+Water pipe game solver made for Artificial Intelligence course.
