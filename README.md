@@ -1,1 +1,1 @@
-Water pipe game solver made for Artificial Intelligence course.
+Project made in Artificial Intelligence course.
