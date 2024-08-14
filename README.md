@@ -1,1 +1,1 @@
-Pipe game solver made in Artificial Intelligence course.
+Pipe flow game solver made in Artificial Intelligence course.
